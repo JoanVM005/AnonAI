@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+Application/.anonrad_env/
+Application/test/MIDRC-RICORD-1c-manifest-Jan-2021/
+Application/test/dicom_phi/
+
+Model/datasets/
+Model/runs/
+Model/results/
+Model/models/*.pt
+
+*.dcm
+*.dicom
+*.venv

@@ -1,0 +1,10 @@
+numpy
+pillow
+torch
+torchvision
+ultralytics
+tkinterdnd2
+pydicom
+pylibjpeg==1.4.0
+pylibjpeg-libjpeg==1.3.4
+easyocr

@@ -1,0 +1,10 @@
+{
+  "rules": [
+    {
+      "id": "portable_test",
+      "name": "Campo PORTABLE",
+      "pattern": "\\bPORTABLE\\b",
+      "enabled": true
+    }
+  ]
+}
