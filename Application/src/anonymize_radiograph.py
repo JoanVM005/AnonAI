@@ -22,6 +22,7 @@ from ultralytics import YOLO
 
 from ocr_redaction import detect_regex_matches, detections_as_private_dicts
 from ocr_rules import DEFAULT_RULES_PATH, load_ocr_rules
+from paths import project_root
 
 try:
     import pydicom
@@ -31,7 +32,7 @@ except Exception:
     apply_voi_lut = None
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = project_root()
 APPLICATION_ROOT = REPO_ROOT / "Application"
 MODEL_ROOT = REPO_ROOT / "Model"
 DEFAULT_MODEL = MODEL_ROOT / "runs" / "radiograph_phi_detection" / "augmented" / "weights" / "best.pt"

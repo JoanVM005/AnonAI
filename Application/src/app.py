@@ -26,13 +26,12 @@ except Exception:
 
 from anonymize_radiograph import DEFAULT_CLASS_NAMES, DEFAULT_MODEL, process_image_selection
 from ocr_rules import DEFAULT_RULES_PATH, load_ocr_rules, new_rule, normalize_rule, save_ocr_rules
+from paths import bundled_path
 
 
 APP_TITLE = "AnonRad AI"
 BRAND_NAME = "AnonRad AI"
-APPLICATION_ROOT = Path(__file__).resolve().parents[1]
-RESOURCES_ROOT = APPLICATION_ROOT / "resources"
-LOGO_PATH = RESOURCES_ROOT / "logo.png"
+LOGO_PATH = bundled_path("resources", "logo.png")
 DEFAULT_CONFIDENCE = 0.25
 DEFAULT_PADDING = 0.10
 FIELD_LABELS = {

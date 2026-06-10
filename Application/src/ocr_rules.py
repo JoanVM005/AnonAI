@@ -4,12 +4,19 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import sys
 from pathlib import Path
 from uuid import uuid4
 
+from paths import bundled_path, user_config_root
 
-APPLICATION_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RULES_PATH = APPLICATION_ROOT / "config" / "ocr_rules.json"
+BUNDLED_DEFAULT_RULES_PATH = bundled_path("config", "ocr_rules.json")
+DEFAULT_RULES_PATH = (
+    user_config_root() / "ocr_rules.json"
+    if getattr(sys, "frozen", False)
+    else Path(__file__).resolve().parents[1] / "config" / "ocr_rules.json"
+)
 
 
 def new_rule(name: str = "", pattern: str = "", enabled: bool = True) -> dict:
@@ -46,8 +53,13 @@ def normalize_rule(raw_rule: dict) -> dict:
 
 def load_ocr_rules(path: Path = DEFAULT_RULES_PATH) -> list[dict]:
     if not path.exists():
+        if BUNDLED_DEFAULT_RULES_PATH.exists() and BUNDLED_DEFAULT_RULES_PATH != path:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(BUNDLED_DEFAULT_RULES_PATH, path)
+        else:
+            save_ocr_rules([], path)
+    if not path.exists():
         save_ocr_rules([], path)
-        return []
     data = json.loads(path.read_text(encoding="utf-8"))
     raw_rules = data.get("rules", []) if isinstance(data, dict) else []
     rules: list[dict] = []

@@ -4,6 +4,10 @@ __pycache__/
 .ipynb_checkpoints/
 
 Application/.anonrad_env/
+Application/.build_env/
+Application/build/
+Application/dist/
+Application/packaging/Output/
 Application/test/MIDRC-RICORD-1c-manifest-Jan-2021/
 Application/test/dicom_phi/
 
