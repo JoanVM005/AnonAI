@@ -7,6 +7,7 @@ import queue
 import shutil
 import tempfile
 import threading
+import webbrowser
 import zipfile
 from pathlib import Path
 import tkinter as tk
@@ -72,218 +73,254 @@ class AnonymizerApp(BaseTk):
         return ImageTk.PhotoImage(image)
 
     def _configure_style(self) -> None:
-        self.configure(bg="#f5f8fb")
+        # Light, minimal palette built around the logo's teal accent.
+        self.col_bg = "#ffffff"
+        self.col_surface = "#f5f7f9"
+        self.col_border = "#e8edf1"
+        self.col_text = "#11222c"
+        self.col_muted = "#6b7c89"
+        self.col_accent = "#0f766e"
+        self.col_accent_dark = "#0b5f59"
+        self.col_accent_soft = "#e7f5f3"
+
+        self.configure(bg=self.col_bg)
         style = ttk.Style(self)
         style.theme_use("clam")
-        style.configure("TFrame", background="#f5f8fb")
-        style.configure("Surface.TFrame", background="#ffffff")
-        style.configure("TLabel", background="#f5f8fb", foreground="#152934")
-        style.configure("Surface.TLabel", background="#ffffff", foreground="#152934")
-        style.configure("Muted.TLabel", background="#ffffff", foreground="#617380")
-        style.configure("Eyebrow.TLabel", background="#ffffff", foreground="#0f766e", font=("TkDefaultFont", 10, "bold"))
-        style.configure("Header.TLabel", background="#ffffff", foreground="#0f2530", font=("TkDefaultFont", 25, "bold"))
-        style.configure("Section.TLabel", background="#ffffff", foreground="#0f2530", font=("TkDefaultFont", 13, "bold"))
-        style.configure("Primary.TButton", background="#0f766e", foreground="#ffffff", borderwidth=0, focusthickness=0, padding=(18, 10))
-        style.map("Primary.TButton", background=[("active", "#0b5f59"), ("disabled", "#9bb1b8")])
-        style.configure("Secondary.TButton", background="#e7f5f3", foreground="#0f4c5c", borderwidth=0, padding=(14, 9))
-        style.map("Secondary.TButton", background=[("active", "#d2ece8")])
-        style.configure("Danger.TButton", background="#fee2e2", foreground="#991b1b", borderwidth=0, padding=(12, 8))
-        style.map("Danger.TButton", background=[("active", "#fecaca")])
-        style.configure("Ghost.TButton", background="#ffffff", foreground="#425766", borderwidth=0, padding=(10, 7))
-        style.map("Ghost.TButton", background=[("active", "#eef4f7")])
+
+        style.configure("TFrame", background=self.col_bg)
+        style.configure("Surface.TFrame", background=self.col_bg)
+        style.configure("TLabel", background=self.col_bg, foreground=self.col_text)
+        style.configure("Surface.TLabel", background=self.col_bg, foreground=self.col_text)
+        style.configure("Muted.TLabel", background=self.col_bg, foreground=self.col_muted)
+        style.configure("Eyebrow.TLabel", background=self.col_bg, foreground=self.col_muted, font=("TkDefaultFont", 9, "bold"))
+        style.configure("Header.TLabel", background=self.col_bg, foreground=self.col_text, font=("TkDefaultFont", 22, "bold"))
+        style.configure("Section.TLabel", background=self.col_bg, foreground=self.col_text, font=("TkDefaultFont", 12, "bold"))
+
+        style.configure("Primary.TButton", background=self.col_accent, foreground="#ffffff", borderwidth=0, focusthickness=0, padding=(22, 12), font=("TkDefaultFont", 11, "bold"))
+        style.map("Primary.TButton", background=[("active", self.col_accent_dark), ("disabled", "#a9c2bd")])
+        style.configure("Secondary.TButton", background=self.col_accent_soft, foreground=self.col_accent_dark, borderwidth=0, padding=(13, 8))
+        style.map("Secondary.TButton", background=[("active", "#d6ece8")])
+        style.configure("Danger.TButton", background="#fdecec", foreground="#a12525", borderwidth=0, padding=(11, 7))
+        style.map("Danger.TButton", background=[("active", "#f8dada")])
+        style.configure("Ghost.TButton", background=self.col_bg, foreground=self.col_muted, borderwidth=0, padding=(9, 6))
+        style.map("Ghost.TButton", background=[("active", self.col_surface)])
         style.configure("TButton", padding=(10, 7))
-        style.configure("TCheckbutton", background="#ffffff", foreground="#18313b", padding=(0, 4))
-        style.map("TCheckbutton", background=[("active", "#ffffff")])
-        style.configure("Horizontal.TProgressbar", troughcolor="#e3edf1", background="#0f766e", bordercolor="#e3edf1", lightcolor="#0f766e", darkcolor="#0f766e")
-        style.configure("Treeview", background="#ffffff", fieldbackground="#ffffff", foreground="#18313b", borderwidth=0, rowheight=26)
-        style.configure("Treeview.Heading", background="#eef4f7", foreground="#31515d", relief="flat", font=("TkDefaultFont", 10, "bold"))
-        style.map("Treeview", background=[("selected", "#d9f2ef")], foreground=[("selected", "#0f2530")])
+        style.configure("TCheckbutton", background=self.col_bg, foreground=self.col_text, padding=(0, 5))
+        style.map("TCheckbutton", background=[("active", self.col_bg)])
+        style.configure("TSpinbox", arrowsize=12)
+        style.configure("Horizontal.TProgressbar", troughcolor=self.col_surface, background=self.col_accent, bordercolor=self.col_surface, lightcolor=self.col_accent, darkcolor=self.col_accent)
+        style.configure("Treeview", background="#ffffff", fieldbackground="#ffffff", foreground=self.col_text, borderwidth=0, rowheight=27)
+        style.configure("Treeview.Heading", background=self.col_surface, foreground=self.col_muted, relief="flat", font=("TkDefaultFont", 9, "bold"), padding=(6, 5))
+        style.map("Treeview", background=[("selected", self.col_accent_soft)], foreground=[("selected", self.col_text)])
+        style.map("Treeview.Heading", background=[("active", self.col_surface)])
 
     def _build_ui(self) -> None:
-        root = ttk.Frame(self, padding=18)
+        root = ttk.Frame(self, padding=(28, 22))
         root.pack(fill=tk.BOTH, expand=True)
         root.columnconfigure(0, weight=1)
-        root.rowconfigure(1, weight=1)
+        root.rowconfigure(2, weight=1)
 
-        header = tk.Frame(root, bg="#ffffff", highlightbackground="#dbe7ec", highlightthickness=1)
-        header.grid(row=0, column=0, sticky="ew", pady=(0, 14))
+        # ---- Header ----
+        header = ttk.Frame(root, style="Surface.TFrame")
+        header.grid(row=0, column=0, sticky="ew")
         header.columnconfigure(1, weight=1)
         if self.logo_image is not None:
-            tk.Label(header, image=self.logo_image, bg="#ffffff").grid(row=0, column=0, rowspan=2, padx=(18, 14), pady=14)
+            tk.Label(header, image=self.logo_image, bg=self.col_bg).grid(row=0, column=0, rowspan=2, padx=(0, 14))
         else:
-            tk.Label(header, text="AI", bg="#0f766e", fg="#ffffff", width=5, height=3, font=("TkDefaultFont", 18, "bold")).grid(
-                row=0, column=0, rowspan=2, padx=(18, 14), pady=14
-            )
-        ttk.Label(header, text=BRAND_NAME, style="Header.TLabel").grid(row=0, column=1, sticky="sw", pady=(16, 0))
-        ttk.Label(
-            header,
-            text="Anonimizacion local de radiografias con IA, YOLO y reglas OCR.",
-            style="Muted.TLabel",
-        ).grid(row=1, column=1, sticky="nw", pady=(2, 16))
-        tk.Label(header, text="LOCAL", bg="#ecfdf5", fg="#047857", padx=12, pady=5, font=("TkDefaultFont", 10, "bold")).grid(
-            row=0, column=2, sticky="e", padx=(0, 18), pady=(20, 0)
+            tk.Label(
+                header, text="AI", bg=self.col_accent, fg="#ffffff", width=4, height=2, font=("TkDefaultFont", 16, "bold")
+            ).grid(row=0, column=0, rowspan=2, padx=(0, 14))
+        ttk.Label(header, text=BRAND_NAME, style="Header.TLabel").grid(row=0, column=1, sticky="sw")
+        ttk.Label(header, text="Anonimización local de radiografías", style="Muted.TLabel").grid(
+            row=1, column=1, sticky="nw", pady=(2, 0)
         )
+        tk.Label(
+            header, text="  LOCAL  ", bg=self.col_accent_soft, fg=self.col_accent_dark, font=("TkDefaultFont", 9, "bold")
+        ).grid(row=0, column=2, rowspan=2, sticky="e")
 
+        tk.Frame(root, height=1, bg=self.col_border).grid(row=1, column=0, sticky="ew", pady=(16, 20))
+
+        # ---- Content: two airy columns, no heavy cards ----
         content = ttk.Frame(root)
-        content.grid(row=1, column=0, sticky="nsew")
-        content.columnconfigure(0, weight=3)
-        content.columnconfigure(1, weight=2)
+        content.grid(row=2, column=0, sticky="nsew")
+        content.columnconfigure(0, weight=3, uniform="cols")
+        content.columnconfigure(1, weight=2, uniform="cols")
         content.rowconfigure(0, weight=1)
 
         left = ttk.Frame(content)
-        left.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        left.grid(row=0, column=0, sticky="nsew", padx=(0, 28))
         left.columnconfigure(0, weight=1)
-        left.rowconfigure(1, weight=1)
+        left.rowconfigure(7, weight=1)
 
         right = ttk.Frame(content)
         right.grid(row=0, column=1, sticky="nsew")
         right.columnconfigure(0, weight=1)
 
-        input_card = tk.Frame(left, bg="#ffffff", highlightbackground="#dbe7ec", highlightthickness=1)
-        input_card.grid(row=0, column=0, sticky="ew", pady=(0, 14))
-        input_card.columnconfigure(0, weight=1)
+        # ---- Left: input + action + activity ----
+        ttk.Label(left, text="IMÁGENES", style="Eyebrow.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 8))
 
-        ttk.Label(input_card, text="Entrada", style="Section.TLabel").grid(row=0, column=0, sticky="w", padx=16, pady=(14, 8))
-
-        self.drop_zone = tk.Frame(input_card, bg="#f8fbfc", highlightbackground="#9fc9d1", highlightthickness=1, height=150)
-        self.drop_zone.grid(row=1, column=0, sticky="ew", padx=16)
+        self.drop_zone = tk.Frame(left, bg=self.col_surface, highlightbackground="#cfe3df", highlightthickness=1, height=134)
+        self.drop_zone.grid(row=1, column=0, sticky="ew")
         self.drop_zone.columnconfigure(0, weight=1)
         self.drop_zone.grid_propagate(False)
 
+        badge = tk.Label(
+            self.drop_zone, text="+", bg=self.col_accent_soft, fg=self.col_accent, font=("TkDefaultFont", 17, "bold"), padx=11
+        )
+        badge.grid(row=0, column=0, pady=(24, 8))
         self.drop_title = tk.Label(
             self.drop_zone,
-            text="Soltar imagenes, DICOM, ZIPs o carpetas",
-            bg="#f8fbfc",
-            fg="#0f2530",
-            font=("TkDefaultFont", 16, "bold"),
+            text="Arrastra o haz clic para añadir",
+            bg=self.col_surface,
+            fg=self.col_text,
+            font=("TkDefaultFont", 14, "bold"),
         )
-        self.drop_title.grid(row=0, column=0, pady=(30, 8))
-
-        hint = "Click para seleccionar archivos o carpeta"
+        self.drop_title.grid(row=1, column=0)
+        hint = "Imágenes, DICOM, ZIP o una carpeta"
         if not DND_AVAILABLE:
-            hint += " - drag and drop requiere tkinterdnd2"
-        self.drop_hint = tk.Label(self.drop_zone, text=hint, bg="#f8fbfc", fg="#5f747b")
-        self.drop_hint.grid(row=1, column=0)
+            hint += " · arrastrar requiere tkinterdnd2"
+        self.drop_hint = tk.Label(self.drop_zone, text=hint, bg=self.col_surface, fg=self.col_muted)
+        self.drop_hint.grid(row=2, column=0, pady=(3, 24))
 
-        self.drop_zone.bind("<Button-1>", lambda _: self._open_input_menu())
-        self.drop_title.bind("<Button-1>", lambda _: self._open_input_menu())
-        self.drop_hint.bind("<Button-1>", lambda _: self._open_input_menu())
-        self.drop_zone.bind("<Enter>", lambda _: self.drop_zone.configure(bg="#edf7f8"))
-        self.drop_zone.bind("<Leave>", lambda _: self.drop_zone.configure(bg="#f8fbfc"))
+        def _drop_enter(_event):
+            for widget in (self.drop_zone, self.drop_title, self.drop_hint):
+                widget.configure(bg="#eef7f5")
+
+        def _drop_leave(_event):
+            for widget in (self.drop_zone, self.drop_title, self.drop_hint):
+                widget.configure(bg=self.col_surface)
+
+        for widget in (self.drop_zone, self.drop_title, self.drop_hint, badge):
+            widget.bind("<Button-1>", lambda _event: self._open_input_menu())
+        self.drop_zone.bind("<Enter>", _drop_enter)
+        self.drop_zone.bind("<Leave>", _drop_leave)
 
         if DND_AVAILABLE:
             self.drop_zone.drop_target_register(DND_FILES)
             self.drop_zone.dnd_bind("<<Drop>>", self._handle_drop)
 
-        selection_bar = ttk.Frame(input_card, style="Surface.TFrame")
-        selection_bar.grid(row=2, column=0, sticky="ew", padx=16, pady=(12, 0))
+        selection_bar = ttk.Frame(left)
+        selection_bar.grid(row=2, column=0, sticky="ew", pady=(12, 6))
         selection_bar.columnconfigure(0, weight=1)
-        self.selection_label = ttk.Label(selection_bar, text="0 elementos seleccionados", style="Surface.TLabel")
+        self.selection_label = ttk.Label(selection_bar, text="0 elementos seleccionados", style="Muted.TLabel")
         self.selection_label.grid(row=0, column=0, sticky="w")
-        ttk.Button(selection_bar, text="Limpiar", style="Ghost.TButton", command=self._clear_selection).grid(row=0, column=1)
+        ttk.Button(selection_bar, text="Limpiar", style="Ghost.TButton", command=self._clear_selection).grid(
+            row=0, column=1, sticky="e"
+        )
 
         self.selection_list = tk.Listbox(
-            input_card,
-            height=5,
+            left,
+            height=4,
             relief=tk.FLAT,
-            bg="#f9fbfc",
-            fg="#203a43",
+            bg=self.col_surface,
+            fg=self.col_text,
             highlightthickness=1,
-            highlightbackground="#e1ebef",
-            selectbackground="#d9f2ef",
-            selectforeground="#0f2530",
+            highlightbackground=self.col_border,
+            selectbackground=self.col_accent_soft,
+            selectforeground=self.col_text,
+            activestyle="none",
+            borderwidth=0,
         )
-        self.selection_list.grid(row=3, column=0, sticky="ew", padx=16, pady=(8, 16))
+        self.selection_list.grid(row=3, column=0, sticky="ew")
 
-        status_card = tk.Frame(left, bg="#ffffff", highlightbackground="#dbe7ec", highlightthickness=1)
-        status_card.grid(row=1, column=0, sticky="nsew")
-        status_card.rowconfigure(2, weight=1)
-        status_card.columnconfigure(0, weight=1)
-
-        controls = ttk.Frame(status_card, style="Surface.TFrame")
-        controls.grid(row=0, column=0, sticky="ew", padx=16, pady=(16, 12))
-        controls.columnconfigure(1, weight=1)
-        self.process_button = ttk.Button(controls, text="Anonimizar", style="Primary.TButton", command=self._start_processing)
+        action = ttk.Frame(left)
+        action.grid(row=4, column=0, sticky="ew", pady=(16, 0))
+        action.columnconfigure(1, weight=1)
+        self.process_button = ttk.Button(action, text="Anonimizar", style="Primary.TButton", command=self._start_processing)
         self.process_button.grid(row=0, column=0, sticky="w")
-        self.progress = ttk.Progressbar(controls, mode="indeterminate")
+        self.progress = ttk.Progressbar(action, mode="indeterminate")
         self.progress.grid(row=0, column=1, sticky="ew", padx=(14, 0))
 
-        self.log = tk.Text(status_card, height=9, wrap=tk.WORD, state=tk.DISABLED, relief=tk.FLAT, bg="#f9fbfc", fg="#203a43")
-        self.log.grid(row=2, column=0, sticky="nsew", padx=16, pady=(0, 16))
-        self._append_log("Listo. Selecciona imagenes o un ZIP para empezar.")
+        ttk.Label(left, text="Redacción irreversible · método blur_then_black", style="Muted.TLabel").grid(
+            row=5, column=0, sticky="w", pady=(10, 18)
+        )
 
-        privacy_card = tk.Frame(right, bg="#ffffff", highlightbackground="#dbe7ec", highlightthickness=1)
-        privacy_card.grid(row=0, column=0, sticky="ew", pady=(0, 14))
-        privacy_card.columnconfigure(0, weight=1)
-        ttk.Label(privacy_card, text="Privacidad", style="Section.TLabel").grid(row=0, column=0, sticky="w", padx=16, pady=(14, 8))
-        tk.Label(
-            privacy_card,
-            text="blur_then_black",
-            bg="#ecfeff",
-            fg="#0e7490",
-            padx=10,
-            pady=4,
-            font=("TkDefaultFont", 10, "bold"),
-        ).grid(row=0, column=1, sticky="e", padx=16, pady=(14, 8))
-        fields_frame = ttk.Frame(privacy_card, style="Surface.TFrame")
-        fields_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=16, pady=(2, 0))
+        ttk.Label(left, text="ACTIVIDAD", style="Eyebrow.TLabel").grid(row=6, column=0, sticky="w", pady=(0, 8))
+        self.log = tk.Text(
+            left,
+            height=7,
+            wrap=tk.WORD,
+            state=tk.DISABLED,
+            relief=tk.FLAT,
+            bg=self.col_surface,
+            fg=self.col_muted,
+            highlightthickness=1,
+            highlightbackground=self.col_border,
+            borderwidth=0,
+            padx=12,
+            pady=10,
+            font=("TkDefaultFont", 10),
+        )
+        self.log.grid(row=7, column=0, sticky="nsew")
+        self._append_log("Listo. Selecciona imágenes o un ZIP para empezar.")
+
+        # ---- Right: fields + extra text + advanced ----
+        ttk.Label(right, text="CAMPOS A OCULTAR", style="Eyebrow.TLabel").grid(row=0, column=0, sticky="w", pady=(0, 4))
+        ttk.Label(right, text="Detectados por IA · todos activos por defecto.", style="Muted.TLabel").grid(
+            row=1, column=0, sticky="w", pady=(0, 10)
+        )
+        fields_frame = ttk.Frame(right)
+        fields_frame.grid(row=2, column=0, sticky="ew")
+        fields_frame.columnconfigure(0, weight=1)
+        fields_frame.columnconfigure(1, weight=1)
         for index, field in enumerate(DEFAULT_CLASS_NAMES):
-            checkbox = ttk.Checkbutton(
+            ttk.Checkbutton(
                 fields_frame,
                 text=FIELD_LABELS.get(field, field),
                 variable=self.field_vars[field],
-            )
-            checkbox.grid(row=index // 2, column=index % 2, sticky="w", padx=(0, 20), pady=(0, 2))
+            ).grid(row=index // 2, column=index % 2, sticky="w", padx=(0, 16), pady=(0, 4))
+
+        tk.Frame(right, height=1, bg=self.col_border).grid(row=3, column=0, sticky="ew", pady=(20, 18))
+
+        ttk.Label(right, text="TEXTO ADICIONAL A OCULTAR", style="Eyebrow.TLabel").grid(row=4, column=0, sticky="w", pady=(0, 4))
         ttk.Label(
-            privacy_card,
-            text="Todos los campos vienen activos.",
+            right,
+            text="Tapa texto escrito en la imagen que coincida con una regex (p. ej. PORTABLE).",
             style="Muted.TLabel",
-        ).grid(row=2, column=0, columnspan=2, sticky="w", padx=16, pady=(8, 14))
+            wraplength=360,
+            justify=tk.LEFT,
+        ).grid(row=5, column=0, sticky="w", pady=(0, 10))
 
-        ocr_card = tk.Frame(right, bg="#ffffff", highlightbackground="#dbe7ec", highlightthickness=1)
-        ocr_card.grid(row=1, column=0, sticky="ew", pady=(0, 14))
-        ocr_card.columnconfigure(0, weight=1)
-
-        ttk.Label(ocr_card, text="Reglas OCR", style="Section.TLabel").grid(row=0, column=0, sticky="w", padx=16, pady=(14, 8))
-
-        self.ocr_tree = ttk.Treeview(ocr_card, columns=("enabled", "name", "pattern"), show="headings", height=4)
+        self.ocr_tree = ttk.Treeview(right, columns=("enabled", "name", "pattern"), show="headings", height=4)
         self.ocr_tree.heading("enabled", text="Usar")
-        self.ocr_tree.heading("name", text="Regla")
+        self.ocr_tree.heading("name", text="Nombre")
         self.ocr_tree.heading("pattern", text="Regex")
-        self.ocr_tree.column("enabled", width=58, stretch=False, anchor=tk.CENTER)
-        self.ocr_tree.column("name", width=150, stretch=False)
-        self.ocr_tree.column("pattern", width=220, stretch=True)
-        self.ocr_tree.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 10))
+        self.ocr_tree.column("enabled", width=52, stretch=False, anchor=tk.CENTER)
+        self.ocr_tree.column("name", width=120, stretch=False)
+        self.ocr_tree.column("pattern", width=180, stretch=True, anchor=tk.CENTER)
+        self.ocr_tree.grid(row=6, column=0, sticky="ew", pady=(0, 10))
 
-        ocr_buttons = ttk.Frame(ocr_card, style="Surface.TFrame")
-        ocr_buttons.grid(row=2, column=0, sticky="ew", padx=16)
-        ttk.Button(ocr_buttons, text="Anadir", style="Secondary.TButton", command=self._add_ocr_rule).grid(row=0, column=0, padx=(0, 6))
+        ocr_buttons = ttk.Frame(right)
+        ocr_buttons.grid(row=7, column=0, sticky="ew")
+        ttk.Button(ocr_buttons, text="Añadir", style="Secondary.TButton", command=self._add_ocr_rule).grid(row=0, column=0, padx=(0, 6))
         ttk.Button(ocr_buttons, text="Editar", style="Ghost.TButton", command=self._edit_ocr_rule).grid(row=0, column=1, padx=(0, 6))
         ttk.Button(ocr_buttons, text="Activar", style="Ghost.TButton", command=self._toggle_ocr_rule).grid(row=0, column=2, padx=(0, 6))
         ttk.Button(ocr_buttons, text="Eliminar", style="Danger.TButton", command=self._delete_ocr_rule).grid(row=0, column=3)
-        ttk.Label(
-            ocr_card,
-            text="OCR no guarda texto reconocido.",
-            style="Muted.TLabel",
-        ).grid(row=3, column=0, sticky="w", padx=16, pady=(8, 14))
+        ttk.Label(right, text="El texto reconocido nunca se guarda.", style="Muted.TLabel").grid(
+            row=8, column=0, sticky="w", pady=(10, 0)
+        )
         self._refresh_ocr_rules()
 
         self.advanced_container = ttk.Frame(right)
-        self.advanced_container.grid(row=2, column=0, sticky="ew")
+        self.advanced_container.grid(row=9, column=0, sticky="ew", pady=(18, 0))
         self.advanced_container.columnconfigure(0, weight=1)
-        ttk.Button(self.advanced_container, text="Ajustes avanzados", style="Ghost.TButton", command=self._toggle_advanced).grid(row=0, column=0, sticky="ew")
+        ttk.Button(
+            self.advanced_container, text="Ajustes avanzados", style="Ghost.TButton", command=self._toggle_advanced
+        ).grid(row=0, column=0, sticky="w")
 
-        self.advanced_frame = tk.Frame(self.advanced_container, bg="#ffffff", highlightbackground="#dbe7ec", highlightthickness=1)
+        self.advanced_frame = ttk.Frame(self.advanced_container)
         self.advanced_frame.columnconfigure(1, weight=1)
-        ttk.Label(self.advanced_frame, text="Padding", style="Surface.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(self.advanced_frame, text="Padding", style="Surface.TLabel").grid(row=0, column=0, sticky="w", pady=(12, 0))
         ttk.Spinbox(self.advanced_frame, from_=0.0, to=0.5, increment=0.05, textvariable=self.padding, width=8).grid(
-            row=0, column=1, sticky="w", padx=(8, 0), pady=(14, 0)
+            row=0, column=1, sticky="w", padx=(10, 0), pady=(12, 0)
         )
         ttk.Label(
             self.advanced_frame,
-            text="Padding amplia ligeramente cada caja detectada antes de taparla.",
+            text="Amplía ligeramente cada zona detectada antes de taparla.",
             style="Muted.TLabel",
-        ).grid(row=1, column=0, columnspan=2, sticky="w", padx=14, pady=(8, 14))
+            wraplength=360,
+            justify=tk.LEFT,
+        ).grid(row=1, column=0, columnspan=2, sticky="w", pady=(6, 0))
 
     def _open_input_menu(self) -> None:
         menu = tk.Menu(self, tearoff=False)
@@ -462,7 +499,7 @@ class AnonymizerApp(BaseTk):
                     ocr_matches = sum(len(summary["ocr_matches"]) for summary in summaries)
                     self._append_log(f"Completado: {total} imagen(es), {redactions} ocultacion(es).")
                     if ocr_matches:
-                        self._append_log(f"OCR: {ocr_matches} coincidencia(s) por reglas activas.")
+                        self._append_log(f"Texto adicional: {ocr_matches} coincidencia(s) por patrones activos.")
                     if skipped:
                         self._append_log(f"Omitidos: {len(skipped)} archivo(s).")
                         for item in skipped[:10]:
@@ -544,7 +581,7 @@ class AnonymizerApp(BaseTk):
     def _selected_ocr_rule_id(self) -> str | None:
         selection = self.ocr_tree.selection()
         if not selection:
-            messagebox.showwarning("Selecciona una regla", "Selecciona una regla OCR primero.")
+            messagebox.showwarning("Selecciona una regex", "Selecciona primero una regex.")
             return None
         return str(selection[0])
 
@@ -586,7 +623,7 @@ class AnonymizerApp(BaseTk):
         index = self._rule_index(rule_id)
         if index is None:
             return
-        if not messagebox.askyesno("Eliminar regla", "Quieres eliminar esta regla OCR?"):
+        if not messagebox.askyesno("Eliminar regex", "¿Quieres eliminar esta regex?"):
             return
         del self.ocr_rules[index]
         self._save_ocr_rules()
@@ -594,6 +631,7 @@ class AnonymizerApp(BaseTk):
     def _open_ocr_rule_dialog(self, rule: dict | None = None) -> None:
         dialog = tk.Toplevel(self)
         dialog.title("Regla OCR")
+        dialog.configure(bg=self.col_bg)
         dialog.transient(self)
         dialog.grab_set()
         dialog.resizable(False, False)
@@ -609,11 +647,22 @@ class AnonymizerApp(BaseTk):
         ttk.Label(frame, text="Nombre").grid(row=0, column=0, sticky="w", padx=(0, 10), pady=(0, 8))
         ttk.Entry(frame, textvariable=name_var, width=48).grid(row=0, column=1, sticky="ew", pady=(0, 8))
         ttk.Label(frame, text="Regex").grid(row=1, column=0, sticky="w", padx=(0, 10), pady=(0, 8))
-        ttk.Entry(frame, textvariable=pattern_var, width=48).grid(row=1, column=1, sticky="ew", pady=(0, 8))
-        ttk.Checkbutton(frame, text="Usar esta regla", variable=enabled_var).grid(row=2, column=1, sticky="w", pady=(0, 12))
+        regex_entry = ttk.Entry(frame, textvariable=pattern_var, width=48, justify=tk.CENTER)
+        regex_entry.grid(row=1, column=1, sticky="ew", pady=(0, 4))
+        regex_help = tk.Label(
+            frame,
+            text="Ayuda para crear regex",
+            bg=self.col_bg,
+            fg=self.col_accent,
+            cursor="hand2",
+            font=("TkDefaultFont", 10, "underline"),
+        )
+        regex_help.grid(row=2, column=1, sticky="w", pady=(0, 8))
+        regex_help.bind("<Button-1>", lambda _: webbrowser.open("https://www.autoregex.xyz/"))
+        ttk.Checkbutton(frame, text="Usar esta regex", variable=enabled_var).grid(row=3, column=1, sticky="w", pady=(0, 12))
 
         buttons = ttk.Frame(frame)
-        buttons.grid(row=3, column=0, columnspan=2, sticky="e")
+        buttons.grid(row=4, column=0, columnspan=2, sticky="e")
 
         def save_rule() -> None:
             candidate = {
@@ -625,7 +674,7 @@ class AnonymizerApp(BaseTk):
             try:
                 normalized = normalize_rule(candidate)
             except ValueError as exc:
-                messagebox.showerror("Regla no valida", str(exc), parent=dialog)
+                messagebox.showerror("Regex no valida", str(exc), parent=dialog)
                 return
             if rule:
                 index = self._rule_index(rule["id"])
